@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atendimento Automático</title>
+    <style>
+        :root {
+            --cor-primaria: #8607a6;
+            --cor-secundaria: #d9048e;
+            --cor-texto: #ffffff;
+            --espacamento: 1.5rem;
+        }
+
+        body {
+            margin: 0;
+            padding: var(--espacamento);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, 
+                #2d0339 0%,    
+                var(--cor-primaria) 50%,   
+                var(--cor-secundaria) 100%   
+            );
+            background-size: 300% 300%;
+            color: var(--cor-texto);
+            min-height: 100vh;
+            text-align: center;
+            animation: gradientAnimation 12s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .profile-img {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            margin: calc(var(--espacamento) * 1.5) auto;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            object-fit: cover;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 0 35px rgba(173, 20, 220, 0.4);
+        }
+
+        .profile-img:hover {
+            transform: scale(1.08) rotate(2deg);
+            box-shadow: 0 0 45px rgba(173, 20, 220, 0.6);
+        }
+
+        .btn-whatsapp {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            width: 85%;
+            max-width: 420px;
+            margin: var(--espacamento) auto;
+            padding: 1.2rem 2rem;
+            background: rgba(134, 7, 166, 0.95);
+            color: var(--cor-texto);
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            cursor: pointer;
+            font-size: 1.15rem;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-whatsapp::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, 
+                transparent 25%,
+                rgba(255,255,255,0.1) 50%,
+                transparent 75%
+            );
+            animation: btnGlow 4s infinite linear;
+        }
+
+        .btn-whatsapp:hover {
+            background: rgba(166, 14, 202, 0.95);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .info-box {
+            background: linear-gradient(145deg,
+                rgba(255,255,255,0.05) 0%,
+                rgba(0,0,0,0.15) 100%
+            );
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin: 2rem auto;
+            max-width: 420px;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes btnGlow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="https://images.tcdn.com.br/files/752941/themes/81/img/settings/999996.png" 
+             alt="Perfil" 
+             class="profile-img"
+             onerror="this.src='fallback-image.png';">
+
+        <h1>Atendimento Online</h1>
+
+        <div class="info-box">
+            <p>🕒 Horário Comercial:<br>
+            Seg-Sex: 08h às 18h<br>
+            Sábado: 08h às 12h</p>
+        </div>
+
+        <button class="btn-whatsapp" onclick="abrirWhatsApp()" aria-label="Iniciar atendimento pelo WhatsApp">
+            <span>💬 Iniciar Atendimento</span>
+        </button>
+
+        <div class="loading" id="loading" aria-label="Carregando..."></div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            numeros: [
+                "558396081239",  // Ezequias
+                "558399410429"   // Bárbara
+            ],
+            mensagem: "Olá! Gostaria de ser atendido(a):",
+            horarios: {
+                diasUteis: { inicio: 8, fim: 18 },
+                sabado: { inicio: 8, fim: 12 }
+            }
+        };
+
+        function verificarHorario() {
+            const agora = new Date();
+            const dia = agora.getDay();
+            const hora = agora.getHours();
+            
+            if (dia >= 1 && dia <= 5) {
+                return hora >= CONFIG.horarios.diasUteis.inicio && hora < CONFIG.horarios.diasUteis.fim;
+            } else if (dia === 6) {
+                return hora >= CONFIG.horarios.sabado.inicio && hora < CONFIG.horarios.sabado.fim;
+            }
+            return false;
+        }
+
+        async function abrirWhatsApp() {
+            const loading = document.getElementById('loading');
+            const botao = document.querySelector('.btn-whatsapp');
+            
+            try {
+                botao.disabled = true;
+                loading.style.display = 'block';
+                
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                if (verificarHorario()) {
+                    // Seleciona um número aleatório
+                    const numeroAleatorio = CONFIG.numeros[Math.floor(Math.random() * CONFIG.numeros.length)];
+                    window.location.href = `https://wa.me/${numeroAleatorio}?text=${encodeURIComponent(CONFIG.mensagem)}`;
+                } else {
+                    alert(`⚠️ Fora do Horário Comercial\n\nAtendimento disponível:\nSeg-Sex: ${CONFIG.horarios.diasUteis.inicio}h - ${CONFIG.horarios.diasUteis.fim}h\nSáb: ${CONFIG.horarios.sabado.inicio}h - ${CONFIG.horarios.sabado.fim}h\n\nPor favor, tente novamente mais tarde.`);
+                }
+            } finally {
+                botao.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
